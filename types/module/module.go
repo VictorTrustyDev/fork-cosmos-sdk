@@ -502,6 +502,8 @@ func (m *Manager) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) abci.Respo
 		if !ok {
 			continue
 		}
+
+		previousCount := len(validatorUpdates)
 		moduleValUpdates := module.EndBlock(ctx, req)
 
 		// use these validator updates if provided, the module manager assumes
@@ -512,6 +514,12 @@ func (m *Manager) EndBlock(ctx sdk.Context, req abci.RequestEndBlock) abci.Respo
 			}
 
 			validatorUpdates = moduleValUpdates
+			laterCount := len(validatorUpdates)
+
+			if laterCount != previousCount {
+				fmt.Println("##### VAL UPDATES ##### from", previousCount, "to", laterCount, "by module", moduleName)
+				fmt.Println("##### VAL UPDATES #####", validatorUpdates)
+			}
 		}
 	}
 
