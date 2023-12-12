@@ -140,7 +140,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	defer iterator.Close()
 
 	var allCount int
-	var brokenWork bool
+	//var brokenWork bool
 	nonZeroValidators := make(map[string]bool)
 	for count := 0; iterator.Valid() && count < int(maxValidators); iterator.Next() {
 		allCount++
@@ -182,7 +182,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		if validator.PotentialConsensusPower(k.PowerReduction(ctx)) == 0 {
 			debug("break potential at %d, key %s for %s, who bonds %s", count, hex.EncodeToString(iterator.Key()), valAddr.String(), validator.Tokens.String())
 			// break
-			brokenWork = true
+			//brokenWork = true
 			continue
 		} else {
 			if _, exists := nonZeroValidators[valAddrStr]; exists {
