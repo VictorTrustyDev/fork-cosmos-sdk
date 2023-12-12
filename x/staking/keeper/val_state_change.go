@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"sort"
 	"strconv"
@@ -153,7 +154,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		// if we get to a zero-power validator (which we don't bond),
 		// there are no more possible bonded validators
 		if validator.PotentialConsensusPower(k.PowerReduction(ctx)) == 0 {
-			debug("break potential at %d", count)
+			debug("break potential at %d, key %s for %s, who bonds %s", count, hex.EncodeToString(iterator.Key()), valAddr.String(), validator.Tokens.String())
 			break
 		}
 
