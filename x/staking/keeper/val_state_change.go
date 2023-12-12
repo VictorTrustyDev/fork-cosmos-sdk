@@ -120,11 +120,25 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		return nil, err
 	}
 
+	isDebug := ctx.BlockHeight() == 1651538
+
+	fmt.Println("####### block", ctx.BlockHeight(), "#######")
+	debug := func(msg string, args ...any) {
+		if !isDebug {
+			return
+		}
+		fmt.Printf("####### VAL DEBUG #######\n"+msg+"\n--------", args...)
+	}
+
+	debug("original last size %d", len(last))
+
 	// Iterate over validators, highest power to lowest.
 	iterator := k.ValidatorsPowerStoreIterator(ctx)
 	defer iterator.Close()
 
+	var allCount int
 	for count := 0; iterator.Valid() && count < int(maxValidators); iterator.Next() {
+		allCount++
 		// everything that is iterated in this loop is becoming or already a
 		// part of the bonded validator set
 		valAddr := sdk.ValAddress(iterator.Value())
@@ -137,6 +151,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		// if we get to a zero-power validator (which we don't bond),
 		// there are no more possible bonded validators
 		if validator.PotentialConsensusPower(k.PowerReduction(ctx)) == 0 {
+			debug("break potential at %d", count)
 			break
 		}
 
@@ -182,10 +197,14 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		totalPower = totalPower.Add(sdk.NewInt(newPower))
 	}
 
+	debug("ValidatorsPowerStoreIterator size %d", allCount)
+
 	noLongerBonded, err := sortNoLongerBonded(last)
 	if err != nil {
 		return nil, err
 	}
+
+	debug("before unbond last size %d", len(last))
 
 	for _, valAddrBytes := range noLongerBonded {
 		validator := k.mustGetValidator(ctx, sdk.ValAddress(valAddrBytes))
@@ -217,6 +236,9 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	if len(updates) > 0 {
 		k.SetLastTotalPower(ctx, totalPower)
 	}
+
+	debug("update size", len(updates))
+	debug("totalPower %s", totalPower.String())
 
 	return updates, err
 }
