@@ -120,11 +120,23 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		return nil, err
 	}
 
+	var countProcessed int
+	var countActualProcessed int
+	//var toBeDeletedPowerStoreIndex [][]byte
+	defer func() {
+		fmt.Println("#### VALIDATOR UPDATE DEBUG ####", "countProcessed", countProcessed, "countActualProcessed", countActualProcessed, "len(toBeDeletedPowerStoreIndex)") //, len(toBeDeletedPowerStoreIndex))
+		//	for _, key := range toBeDeletedPowerStoreIndex {
+		//		ctx.KVStore(k.storeKey).Delete(key)
+		//	}
+	}()
+
 	// Iterate over validators, highest power to lowest.
 	iterator := k.ValidatorsPowerStoreIterator(ctx)
 	defer iterator.Close()
 
 	for count := 0; iterator.Valid() && count < int(maxValidators); iterator.Next() {
+		countProcessed++
+
 		// everything that is iterated in this loop is becoming or already a
 		// part of the bonded validator set
 		valAddr := sdk.ValAddress(iterator.Value())
@@ -139,6 +151,15 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		if validator.PotentialConsensusPower(k.PowerReduction(ctx)) == 0 {
 			break
 		}
+
+		powerIndexKey := types.GetValidatorsByPowerIndexKey(validator, k.PowerReduction(ctx))
+		if !bytes.Equal(iterator.Key(), powerIndexKey) {
+			fmt.Println("#### VALIDATOR UPDATE DEBUG ####", "found duplicated powerIndexKey of validator", validator.OperatorAddress)
+			//toBeDeletedPowerStoreIndex = append(toBeDeletedPowerStoreIndex, iterator.Key())
+			//continue
+		}
+
+		countActualProcessed++
 
 		// apply the appropriate state change if necessary
 		switch {
