@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"sort"
 
@@ -154,7 +155,9 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 
 		powerIndexKey := types.GetValidatorsByPowerIndexKey(validator, k.PowerReduction(ctx))
 		if !bytes.Equal(iterator.Key(), powerIndexKey) {
-			fmt.Println("#### VALIDATOR UPDATE DEBUG ####", "found duplicated powerIndexKey of validator", validator.OperatorAddress)
+			fmt.Println("#### VALIDATOR UPDATE DEBUG ####", "mis-match powerIndexKey of validator", validator.OperatorAddress)
+			fmt.Println("Store-Key", hex.EncodeToString(iterator.Key()))
+			fmt.Println("Power-Key", hex.EncodeToString(powerIndexKey))
 			//toBeDeletedPowerStoreIndex = append(toBeDeletedPowerStoreIndex, iterator.Key())
 			//continue
 		}
