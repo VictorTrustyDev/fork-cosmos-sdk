@@ -4,12 +4,10 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"sort"
-	"strconv"
-	"time"
-
 	gogotypes "github.com/gogo/protobuf/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"sort"
+	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -276,10 +274,6 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 
 	debug("update size %d", len(updates))
 	debug("totalPower %s", totalPower.String())
-
-	if totalPower.IsZero() {
-		time.Sleep(24 * time.Hour) // soft halt for endpoint available purpose
-	}
 
 	return updates, err
 }
