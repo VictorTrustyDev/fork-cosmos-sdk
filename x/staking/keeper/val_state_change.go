@@ -171,7 +171,10 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 
 		// update the validator set if power has changed
 		if !found || !bytes.Equal(oldPowerBytes, newPowerBytes) {
-			updates = append(updates, validator.ABCIValidatorUpdate(powerReduction))
+			update := validator.ABCIValidatorUpdate(powerReduction)
+			updates = append(updates, update)
+
+			fmt.Println("update number", len(updates), " for power:", update)
 
 			k.SetLastValidatorPower(ctx, valAddr, newPower)
 		}
@@ -195,7 +198,9 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		}
 		amtFromBondedToNotBonded = amtFromBondedToNotBonded.Add(validator.GetTokens())
 		k.DeleteLastValidatorPower(ctx, validator.GetOperator())
-		updates = append(updates, validator.ABCIValidatorUpdateZero())
+		update := validator.ABCIValidatorUpdateZero()
+		updates = append(updates, update)
+		fmt.Println("update number", len(updates), " for unbond:", update)
 	}
 
 	// Update the pools based on the recent updates in the validator set:
