@@ -193,12 +193,16 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		newPower := validator.ConsensusPower(powerReduction)
 		newPowerBytes := k.cdc.MustMarshal(&gogotypes.Int64Value{Value: newPower})
 
+		fmt.Println("Validator addr", validator.OperatorAddress, ", new power =", newPower)
+
 		// update the validator set if power has changed
 		if !found || !bytes.Equal(oldPowerBytes, newPowerBytes) {
 			update := validator.ABCIValidatorUpdate(powerReduction)
 			updates = append(updates, update)
 
-			fmt.Println("update number", len(updates), " for power:", update)
+			var oldPower gogotypes.Int64Value
+			k.cdc.MustUnmarshal(oldPowerBytes, &oldPower)
+			fmt.Println("update number", len(updates), " for power:", update, "oldPower:", oldPower.Value, "newPower:", newPower)
 
 			k.SetLastValidatorPower(ctx, valAddr, newPower)
 		}
