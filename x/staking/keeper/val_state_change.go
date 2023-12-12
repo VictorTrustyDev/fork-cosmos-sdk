@@ -124,10 +124,6 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	iterator := k.ValidatorsPowerStoreIterator(ctx)
 	defer iterator.Close()
 
-	processedValidatorsPower := make(map[string]int64)
-	var countRecords int
-	var countActualProcessed int
-
 	for count := 0; iterator.Valid() && count < int(maxValidators); iterator.Next() {
 		// everything that is iterated in this loop is becoming or already a
 		// part of the bonded validator set
@@ -172,19 +168,6 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		oldPowerBytes, found := last[valAddrStr]
 		newPower := validator.ConsensusPower(powerReduction)
 		newPowerBytes := k.cdc.MustMarshal(&gogotypes.Int64Value{Value: newPower})
-
-		countRecords++
-		if previouslyAddedNewPower, found := processedValidatorsPower[valAddrStr]; found {
-			// FIXME: this is a workaround
-			if previouslyAddedNewPower == newPower {
-				k.DeleteLastValidatorPower(ctx, valAddr) // remove duplicated records from store
-				continue                                 // skip to prevent duplication
-			}
-			// let the issue keep happening
-		} else {
-			processedValidatorsPower[valAddrStr] = newPower
-		}
-		countActualProcessed++
 
 		// update the validator set if power has changed
 		if !found || !bytes.Equal(oldPowerBytes, newPowerBytes) {
@@ -239,8 +222,6 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	if len(updates) > 0 {
 		k.SetLastTotalPower(ctx, totalPower)
 	}
-
-	fmt.Println("countRecords:", countRecords, "countActualProcessed:", countActualProcessed, "len update:", len(updates))
 
 	return updates, err
 }
