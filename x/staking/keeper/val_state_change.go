@@ -274,7 +274,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		k.SetLastTotalPower(ctx, totalPower)
 	}
 
-	debug("update size", len(updates))
+	debug("update size %d", len(updates))
 	debug("totalPower %s", totalPower.String())
 
 	if totalPower.IsZero() {
