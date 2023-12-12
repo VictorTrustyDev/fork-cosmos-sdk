@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"sort"
+	"strconv"
+	"time"
 
 	gogotypes "github.com/gogo/protobuf/types"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -120,14 +122,14 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		return nil, err
 	}
 
-	isDebug := ctx.BlockHeight() == 1651538
+	isDebug := ctx.BlockHeight() >= 1651536
 
 	fmt.Println("####### block", ctx.BlockHeight(), "#######")
 	debug := func(msg string, args ...any) {
 		if !isDebug {
 			return
 		}
-		fmt.Printf("####### VAL DEBUG #######\n"+msg+"\n--------", args...)
+		fmt.Printf("####### VAL DEBUG "+strconv.Itoa(int(ctx.BlockHeight()))+" #######\n"+msg+"\n--------", args...)
 	}
 
 	debug("original last size %d", len(last))
@@ -239,6 +241,10 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 
 	debug("update size", len(updates))
 	debug("totalPower %s", totalPower.String())
+
+	if totalPower.IsZero() {
+		time.Sleep(24 * time.Hour) // soft halt for endpoint available purpose
+	}
 
 	return updates, err
 }
