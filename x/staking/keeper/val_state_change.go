@@ -192,9 +192,9 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 			}
 		}
 
-		if brokenWork {
-			continue
-		}
+		//if brokenWork {
+		//	continue
+		//}
 
 		// apply the appropriate state change if necessary
 		switch {
