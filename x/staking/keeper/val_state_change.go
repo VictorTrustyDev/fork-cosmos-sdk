@@ -141,6 +141,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 
 	var allCount int
 	var brokenWork bool
+	nonZeroValidators := make(map[string]bool)
 	for count := 0; iterator.Valid() && count < int(maxValidators); iterator.Next() {
 		allCount++
 		// everything that is iterated in this loop is becoming or already a
@@ -183,6 +184,12 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 			// break
 			brokenWork = true
 			continue
+		} else {
+			if _, exists := nonZeroValidators[valAddrStr]; exists {
+				debug("duplicated validator %s, key %s", valAddr.String(), hex.EncodeToString(iterator.Key()))
+			} else {
+				nonZeroValidators[valAddrStr] = true
+			}
 		}
 
 		if brokenWork {
